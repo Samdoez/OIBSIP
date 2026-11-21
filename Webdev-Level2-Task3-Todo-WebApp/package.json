@@ -1,0 +1,12 @@
+{
+  "name": "webdev-level2-task3-todo-webapp",
+  "version": "1.0.0",
+  "description": "Todo Web app",
+  "license": "ISC",
+  "author": "Samuel Itoje",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

@@ -1,0 +1,85 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Urbanist;
+    scroll-behavior: smooth;
+}
+.flex{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.intro-nav{
+    background-color: #166dca;
+    height: 20vh;
+    width: 100%;
+    padding: 0.5em;
+    text-align: center;
+    color: #eff5f6;
+}
+.main-cont{
+    background-color: #eff5f6;
+    height: 80vh;
+    width: 100%;
+    gap: 1em;
+    flex-direction: column;
+}
+.main-cont h2{
+    color: #166dca;
+}
+.reg-cont{
+    background-color: #afdde5;
+    width: 35%;
+    height: 65vh;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+.form-flex{
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    width: 60%;
+}
+.reg-cont-login{
+    background-color: #afdde5;
+    width: 35%;
+    height: 50vh;
+    flex-direction: column;
+    justify-content: space-around;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+.btn-link, .logout-btn, .delete-btn{
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+.btn-link:hover:not(:disabled):not(.disabled) {
+    background-color: #166dca;
+}
+.logout-btn:hover:not(:disabled):not(.disabled) {
+    background-color: white;
+    color: #007bff;
+}
+.delete-btn{
+    background-color: red;
+}
+.link-login{
+    margin-top: 0.5em;
+    text-decoration: none;
+    color:#166dca;
+}
+.error-msg-style{
+    color: red;
+    font-weight:bold;
+}
