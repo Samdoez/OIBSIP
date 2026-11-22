@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css">
+    <title>Login</title>
+</head>
+<body>
+    <div class="intro-nav flex">
+        <h1>Welcome to Registration Page</h1>
+    </div>
+    <div class="main-cont flex">
+        <h2 class="">Login your Account</h2>
+        
+        <div class="reg-cont-login-page flex">
+            <form class="form-flex flex" id="registerForm" action="/createAccount" method="post" autocomplete="off" novalidate>
+                <div>
+                    <label for="email">Email</label> <br/>
+                    <input type="email" name="email" id="email" placeholder="enter your email" autocomplete="off"
+                    value="<%= typeof formData !== 'undefined' ? formData.email : '' %>" /> <br/>
+                    
+                    <small class="error-msg-style" id="emailError">
+                        <%= locals.error ? error : "" %>
+                    </small>
+                </div>
+            
+                <div>
+                    <label for="password">Password</label> <br/>
+                    <input type="password" name="password" id="password" placeholder="create password" autocomplete="off" /> <br/>
+
+                    <small class="error-msg-style" id="passwordError">
+                        <%= locals.error ? error : "" %>
+                    </small>
+                </div>
+                
+                <button class="btn-link" type="submit">Login</button>
+            </form>
+            
+            <a href="/loginPage" class="link-login"> No Account click to <strong>Register</strong></a> 
+            <p class="err-style">
+                <% if (locals.error) { %>
+                    <%= error %>
+            <% } %>
+            </p>
+    </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const fNameInput = document.getElementById('FName');
+        const lNameInput = document.getElementById('LName');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        const fNameError = document.getElementById('FNameError');
+        const lNameError = document.getElementById('LNameError');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+        const nameRegex = /^[A-Za-z0-9]/;
+        const emailStructureRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|io|co|ng)$/i;
+        const emailTypoRegex = /@(gmai|gmal|gmial|yaho|outloo|hotmai)\.(com|net|org)$/i;
+
+
+    form.addEventListener('submit', (e) => {
+        let isValid = true;
+        fNameError.textContent = '';
+        lNameError.textContent = '';
+        emailError.textContent = '';
+        passwordError.textContent = '';
+        confirmPasswordError.textContent = '';
+
+        const fName = fNameInput.value.trim();
+        const lName = lNameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+
+        if (!fName) { //to check all the validation with fname >
+            fNameError.textContent = 'First name is required';
+            isValid = false;
+        } else if (!nameRegex.test(fName)) {
+            fNameError.textContent = 'Must start with a letter or number';
+            isValid = false;
+        } else if (fName.length < 3) {
+            fNameError.textContent = 'At least 3 characters';
+            isValid = false;
+        }
+
+        if (!lName) {
+            lNameError.textContent = 'Last name is required';
+            isValid = false;
+        } else if (!nameRegex.test(lName)) {
+            lNameError.textContent = 'Must start with a letter or number';
+            isValid = false;
+        } else if (lName.length < 3) {
+            lNameError.textContent = 'At least 3 characters';
+            isValid = false;
+        }
+
+        if (!email){
+                emailError.textContent = 'email is required';
+                isValid = false;
+        }else if (!emailStructureRegex.test(email)){
+                emailError.textContent= 'please enter a valid email address';
+                isValid = false;
+        }else if (emailTypoRegex.test(email)){
+                emailError.textContent= 'Email address typo error';
+                isValid = false;
+        } 
+
+        if (!password){
+                passwordError.textContent = 'password is required';
+                isValid = false;
+        } else if(password.length < 8){
+                passwordError.textContent = 'password must be at least 8 characters';
+                isValid = false;
+        } else if(!/[A-Z]/.test(password)){
+                passwordError.textContent = 'password must contain an UpperCase';
+                isValid = false;
+        } else if(!/[0-9]/.test(password)){
+                passwordError.textContent = 'password must contain an number';
+                isValid = false;
+        } else if(!/[^A-Za-z0-9]/.test(password)){
+                passwordError.textContent = 'password must contain a special character';
+                isValid = false;
+        }
+
+        if (!confirmPassword){
+                confirmPasswordError.textContent = 'confirm password is required';
+                isValid = false;
+        } else if(confirmPassword !== password){
+                confirmPasswordError.textContent = 'confirmPassword must be same as password';
+                isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault(); // Stop submission until fixed
+        }
+        });
+    </script>
+</body>
+</html>

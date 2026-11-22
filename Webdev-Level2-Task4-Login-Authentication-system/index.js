@@ -99,15 +99,15 @@ app.post("/createAccount", async (req,res) => {
   }
 });
 
-//to render the login page
-// app.get("/loginPage", (req, res) =>{
-//     try {
-//         return res.status(200).render("loginUser.ejs");
-//     } catch (error) {
-//         console.log("An error occured: ", error.stack);
-//         return res.status(500).render("createAccount.ejs", {error: "Internal Server Error"})
-//     }
-// });
+// to render the login page
+app.get("/loginPageNav", (req, res) =>{
+    try {
+        return res.status(200).render("loginPage.ejs");
+    } catch (error) {
+        console.log("An error occured: ", error.stack);
+        return res.status(500).render("loginPage.ejs", {error: "Internal Server Error"})
+    }
+});
 
 //to handle all verification when trying to login a user
 // app.post("/loginUser", async (req,res) => {

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css">
-    <title>Login Auth.</title>
+    <title>Registration page</title>
 </head>
 <body>
     <div class="intro-nav flex">
@@ -66,11 +66,15 @@
                     </small>
                 </div>
                 
-                <button class="btn-link" type="submit">Create Account</button>
+                <button class="btn-link" type="submit">Register</button>
             </form>
             
-            <a href="/loginPage" class="link-login">Have an account already <strong>Login</strong></a> 
-    </div>
+            <a href="/loginPageNav" class="link-login">Have an account already <strong>Login</strong></a> 
+            <p class="err-style">
+                <% if (locals.error) { %>
+                    <%= error %>
+                <% } %>
+            </p>
 
     <script>
         const form = document.getElementById('registerForm');
