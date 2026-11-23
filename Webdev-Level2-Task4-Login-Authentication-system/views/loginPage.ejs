@@ -11,13 +11,13 @@
 </head>
 <body>
     <div class="intro-nav flex">
-        <h1>Welcome to Registration Page</h1>
+        <h1>Welcome to Login Page</h1>
     </div>
     <div class="main-cont flex">
         <h2 class="">Login your Account</h2>
         
         <div class="reg-cont-login-page flex">
-            <form class="form-flex flex" id="registerForm" action="/createAccount" method="post" autocomplete="off" novalidate>
+            <form class="form-flex flex" id="registerForm" action="/loginUser" method="post" autocomplete="off" novalidate>
                 <div>
                     <label for="email">Email</label> <br/>
                     <input type="email" name="email" id="email" placeholder="enter your email" autocomplete="off"
@@ -40,7 +40,7 @@
                 <button class="btn-link" type="submit">Login</button>
             </form>
             
-            <a href="/loginPage" class="link-login"> No Account click to <strong>Register</strong></a> 
+            <a href="/" class="link-login"> No Account click to <strong>Register</strong></a> 
             <p class="err-style">
                 <% if (locals.error) { %>
                     <%= error %>

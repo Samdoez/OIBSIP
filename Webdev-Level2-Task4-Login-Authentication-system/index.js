@@ -73,7 +73,7 @@ app.post("/createAccount", async (req,res) => {
     return res.status(400).render("index.ejs", { error: "minimum 8 characters and must include Capital letter, A Number and Special Character" });
   }
 
-  if (!checkConfirmPassword(confirmPassword)) { //my confirm password check
+  if (!checkConfirmPassword(confirmPassword, password)) { //my confirm password check
     return res.status(400).render("index.ejs", { error: "confirmPassword must be same as password " });
   }
 
@@ -90,21 +90,33 @@ app.post("/createAccount", async (req,res) => {
 
     //if all verification successful inssert into DB and return RETURNING id for session handling
     const result = await db.query(
-      "INSERT INTO userdb (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING id", 
+      "INSERT INTO userdb (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING user_id", 
       [fname, lname, email, hashedPassword]
     );
     
     //to store new created user id in a session
-    req.session.currentUserId = result.rows[0].id;
+    console.log(result.rows)
+    req.session.currentUserId = result.rows[0].user_id;
 
     console.log("User registered and logged in with ID:", req.session.currentUserId);
     return res.redirect("/userDashboard"); 
   } catch (error) {
     console.error("An error occurred:", error.stack);
-    return res.status(500).render("createAccount.ejs", { error: "Internal Server Error" });
+    return res.status(500).render("index.ejs", { error: "Internal Server Error" });
   }
 });
 
+app.get("/userDashboard", (req,res) => {
+  try{
+    if (!req.session.currentUserId) {
+      return res.redirect("/");
+    }
+    return res.status(200).render("dashboard.ejs");
+  } catch (error){
+      console.log("An error occured: ", error.stack);
+      return res.status(500).render("index.ejs", {error: "Internal Server Error"})
+  }
+})
 
 
 // to render the login page
@@ -117,46 +129,46 @@ app.get("/loginPageNav", (req, res) =>{
     }
 });
 
-//to handle all verification when trying to login a user
-// app.post("/loginUser", async (req,res) => {
-//   const email = (req.body.email || "").toLowerCase().trim();
-//   const password = (req.body.password || "").trim();
+// to handle all verification when a user tries to login
+app.post("/loginUser", async (req,res) => {
+  const email = (req.body.email || "").toLowerCase().trim();
+  const password = (req.body.password || "").trim();
 
-//   if (!email || !password) {  //my check against empty field
-//     return res.status(400).render("loginUser.ejs", { error: "All fields are required" });
-//   }
+  if (!email || !password) {  //my check against empty field
+    return res.status(400).render("loginUser.ejs", { error: "All fields are required" });
+  }
 
-//   if (hasInvalidEmailDomain(email)) { //my check against invalid domain
-//     return res.status(400).render("loginUser.ejs", { error: "Invalid email domain. Please use a valid email address." });
-//   }
+  if (!checkEmailStructureAndDomain(email)) { //my check against invalid domain and email structure
+    return res.status(400).render("index.ejs", { error: "Invalid email domain. Please use a valid email address." });
+  }
 
-//   try { // to check the DB if the accounts xist
-//     const checkDetails = await db.query("SELECT id, email, password FROM user_reg_table WHERE email = $1", [email]);
+  try { // to check the DB if the accounts xist
+    const checkDetails = await db.query("SELECT user_id, email, password FROM userdb WHERE email = $1", [email]);
 
-//     if (checkDetails.rows.length === 0) {
-//       return res.status(400).render("loginUser.ejs", { error: "Incorrect Details" });
-//     }
+    if (checkDetails.rows.length === 0) {
+      return res.status(400).render("loginPage.ejs", { error: "Incorrect Details" });
+    }
 
-//     const user = checkDetails.rows[0];
+    const user = checkDetails.rows[0];
     
-//     //now i want to Compare entered plain-text password with stored hashed password
-//     const isPasswordMatch = await bcrypt.compare(password, user.password);
+    //now i want to Compare entered plain-text password with stored hashed password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
 
-//     if (!isPasswordMatch) {
-//       return res.status(400).render("loginUser.ejs", { error: "Incorrect Details" });
-//     }
+    if (!isPasswordMatch) {
+      return res.status(400).render("loginUser.ejs", { error: "Incorrect Details" });
+    }
 
-//     //to save user id in session on successful login
-//     req.session.userId = user.id;
+    //to save user id in session on successful login
+    req.session.userId = user.id;
 
-//     console.log("User logged in with ID:", req.session.userId);
-//     return res.redirect("/userDashboard");
+    console.log("User logged in with ID:", req.session.userId);
+    return res.redirect("/userDashboard");
 
-//   } catch (error) {
-//     console.error("An error occurred:", error.stack);
-//     return res.status(500).render("loginUser.ejs", { error: "Internal Server Error" });
-//   }
-// });
+  } catch (error) {
+    console.error("An error occurred:", error.stack);
+    return res.status(500).render("loginUser.ejs", { error: "Internal Server Error" });
+  }
+});
 
 function checkEmailStructureAndDomain(email) {
   // Regex pattern
@@ -185,7 +197,7 @@ function checkPassword(password) {
   return true;
 }
 
-function checkConfirmPassword(confirmPassword) {
+function checkConfirmPassword(confirmPassword, password) {
   if (confirmPassword !== password) {
         return false;
     } 

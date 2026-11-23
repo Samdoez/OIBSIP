@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css">
+    <title>Dashboard</title>
+</head>
+<body>
+    <div class="nav">
+        <h2 class="">Welcome to Login Authentication</h2>
+        <div class="userflex">
+            <h3 class="">User</h3>
+            <div>
+                <form action="/logout" method="POST">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="list-cont">
+        <% if (locals.message) { %>
+                <p><%= message %></p>
+        <% } %>
+
+        <h1 class="security"> Security at its Zenith</h1>
+        <p>Saftey is our watch word</p>
+        <div class="menu-head ">
+            <a class="btn-link" href="#Guard">Guard</a>
+            <a class="btn-link" href="/Authenticate">Authenticate</a>
+            <a class="btn-link" href="/Scan Orders">Scan Orders</a>
+        </div>
+    </div>
+</body>
+</html>
