@@ -51,58 +51,23 @@
 
     <script>
         const form = document.getElementById('registerForm');
-        const fNameInput = document.getElementById('FName');
-        const lNameInput = document.getElementById('LName');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirmPassword');
 
-        const fNameError = document.getElementById('FNameError');
-        const lNameError = document.getElementById('LNameError');
         const emailError = document.getElementById('emailError');
         const passwordError = document.getElementById('passwordError');
-        const confirmPasswordError = document.getElementById('confirmPasswordError');
 
-        const nameRegex = /^[A-Za-z0-9]/;
         const emailStructureRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|io|co|ng)$/i;
         const emailTypoRegex = /@(gmai|gmal|gmial|yaho|outloo|hotmai)\.(com|net|org)$/i;
 
 
     form.addEventListener('submit', (e) => {
         let isValid = true;
-        fNameError.textContent = '';
-        lNameError.textContent = '';
         emailError.textContent = '';
         passwordError.textContent = '';
-        confirmPasswordError.textContent = '';
 
-        const fName = fNameInput.value.trim();
-        const lName = lNameInput.value.trim();
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
-        const confirmPassword = confirmPasswordInput.value.trim();
-
-        if (!fName) { //to check all the validation with fname >
-            fNameError.textContent = 'First name is required';
-            isValid = false;
-        } else if (!nameRegex.test(fName)) {
-            fNameError.textContent = 'Must start with a letter or number';
-            isValid = false;
-        } else if (fName.length < 3) {
-            fNameError.textContent = 'At least 3 characters';
-            isValid = false;
-        }
-
-        if (!lName) {
-            lNameError.textContent = 'Last name is required';
-            isValid = false;
-        } else if (!nameRegex.test(lName)) {
-            lNameError.textContent = 'Must start with a letter or number';
-            isValid = false;
-        } else if (lName.length < 3) {
-            lNameError.textContent = 'At least 3 characters';
-            isValid = false;
-        }
 
         if (!email){
                 emailError.textContent = 'email is required';
@@ -129,14 +94,6 @@
                 isValid = false;
         } else if(!/[^A-Za-z0-9]/.test(password)){
                 passwordError.textContent = 'password must contain a special character';
-                isValid = false;
-        }
-
-        if (!confirmPassword){
-                confirmPasswordError.textContent = 'confirm password is required';
-                isValid = false;
-        } else if(confirmPassword !== password){
-                confirmPasswordError.textContent = 'confirmPassword must be same as password';
                 isValid = false;
         }
         

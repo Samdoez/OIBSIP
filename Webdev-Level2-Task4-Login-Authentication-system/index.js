@@ -23,21 +23,21 @@ app.use( session({
   })
 );
 
-// const db = new pg.Pool({
-//   user: process.env.PG_user,
-//   host: process.env.PG_HOST,
-//   database: process.env.PG_DATABASE,
-//   password: process.env.PG_PASSWORD,
-//   port: process.env.PG_PORT,
-// });
-// db.connect((err, client, release) => {
-//   if (err) {
-//     console.error("DB connection error:", err.stack);
-//   } else {
-//     console.log("Successfully connected to the PostgreSQL DB");
-//     release(); 
-//   }
-// });
+const db = new pg.Pool({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+});
+db.connect((err, client, release) => {
+  if (err) {
+    console.error("DB connection error:", err.stack);
+  } else {
+    console.log("Successfully connected to the PostgreSQL DB");
+    release(); 
+  }
+});
 
 //response to request for the home page
 app.get("/", (req, res) =>{
@@ -58,46 +58,54 @@ app.post("/createAccount", async (req,res) => {
   const confirmPassword = (req.body.confirmPassword || "").trim();
 
   if (!fname || !lname || !email || !password || !confirmPassword) {  //my check against empty field
-    return res.status(400).render("createAccount.ejs", { error: "All fields are required" });
+    return res.status(400).render("index.ejs", { error: "All fields are required" });
   }
 
-  if (hasInvalidEmailDomain(email)) { //my check against invalid domain
-    return res.status(400).render("createAccount.ejs", { error: "Invalid email domain. Please use a valid email address." });
+  if (fname.length < 3 || lname.length < 3) { //my check against name length
+    return res.status(400).render("index.ejs", { error: "First and last names must be 3 characters and above" });
   }
 
-  if (fname.length <= 3 || lname.length <= 3) { //my check against name length
-    return res.status(400).render("createAccount.ejs", { error: "First and last names must be at least 3 characters long." });
+  if (!checkEmailStructureAndDomain(email)) { //my check against invalid domain and email structure
+    return res.status(400).render("index.ejs", { error: "Invalid email domain. Please use a valid email address." });
   }
 
-  try {
-    const checkEmail = await db.query("SELECT email FROM user_reg_table WHERE email = $1", [email]);
+  if (!checkPassword(password)) { //my password check
+    return res.status(400).render("index.ejs", { error: "minimum 8 characters and must include Capital letter, A Number and Special Character" });
+  }
 
-    if (checkEmail.rows.length > 0) {
-      return res.status(400).render("createAccount.ejs", { error: "Email exists. Try Login" });
+  if (!checkConfirmPassword(confirmPassword)) { //my confirm password check
+    return res.status(400).render("index.ejs", { error: "confirmPassword must be same as password " });
+  }
+
+  try { // insert into DB if all checks are successful
+    const checkEmailDuplicity = await db.query("SELECT email FROM userdb WHERE email = $1", [email]);
+
+    if (checkEmailDuplicity.rows.length > 0) {
+      console.log("Email already exists in the database:", email);
+      return res.status(400).render("index.ejs", { error: "Email exists. Try Login" });
     }
 
-    if (password !== confirmPassword) {
-      return res.status(400).render("createAccount.ejs", { error: "Password Mis-match" });
-    }
     //next implementing password hashing for security
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     //if all verification successful inssert into DB and return RETURNING id for session handling
     const result = await db.query(
-      "INSERT INTO user_reg_table (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id", 
+      "INSERT INTO userdb (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING id", 
       [fname, lname, email, hashedPassword]
     );
     
     //to store new created user id in a session
-    req.session.userId = result.rows[0].id;
+    req.session.currentUserId = result.rows[0].id;
 
-    console.log("User registered and logged in with ID:", req.session.userId);
+    console.log("User registered and logged in with ID:", req.session.currentUserId);
     return res.redirect("/userDashboard"); 
   } catch (error) {
     console.error("An error occurred:", error.stack);
     return res.status(500).render("createAccount.ejs", { error: "Internal Server Error" });
   }
 });
+
+
 
 // to render the login page
 app.get("/loginPageNav", (req, res) =>{
@@ -150,10 +158,39 @@ app.get("/loginPageNav", (req, res) =>{
 //   }
 // });
 
-function hasInvalidEmailDomain(email) {
+function checkEmailStructureAndDomain(email) {
   // Regex pattern
+  
+  const emailStructureRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|io|co|ng)$/i;
   const typoPattern = /@(gmai|gmal|gmial|yaho|outloo|hotmai)\.(com|net|org)$/i;
-  return typoPattern.test(email);
+
+  if (!emailStructureRegex.test(email) || typoPattern.test(email) ) {
+    return false;
+  }
+
+  return true;
+}
+
+function checkPassword(password) {
+  if (password.length < 8){
+        return false;
+    } else if(!/[A-Z]/.test(password)){
+        return false;
+    } else if(!/[0-9]/.test(password)){
+        return false;
+    } else if(!/[^A-Za-z0-9]/.test(password)){
+        return false;
+    }
+
+  return true;
+}
+
+function checkConfirmPassword(confirmPassword) {
+  if (confirmPassword !== password) {
+        return false;
+    } 
+
+  return true;
 }
 
 app.listen(port, () => { 
