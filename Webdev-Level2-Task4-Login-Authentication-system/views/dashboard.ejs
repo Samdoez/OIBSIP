@@ -13,7 +13,7 @@
     <div class="nav">
         <h2 class="">Welcome to Login Authentication</h2>
         <div class="userflex">
-            <h3 class="">User</h3>
+            <h3 class=""> <%= locals.userName ? userName : "" %></h3>
             <div>
                 <form action="/logout" method="POST">
                     <button type="submit" class="logout-btn">Logout</button>
@@ -23,9 +23,7 @@
     </div>
 
     <div class="list-cont">
-        <% if (locals.message) { %>
-                <p><%= message %></p>
-        <% } %>
+        <%= locals.message ? message : "" %>
 
         <h1 class="security"> Security at its Zenith</h1>
         <p>Saftey is our watch word</p>

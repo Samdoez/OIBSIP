@@ -30,7 +30,7 @@
             
                 <div>
                     <label for="password">Password</label> <br/>
-                    <input type="password" name="password" id="password" placeholder="create password" autocomplete="off" /> <br/>
+                    <input type="password" name="password" id="password" placeholder="password" autocomplete="off" /> <br/>
 
                     <small class="error-msg-style" id="passwordError">
                         <%= locals.error ? error : "" %>
@@ -41,10 +41,8 @@
             </form>
             
             <a href="/" class="link-login"> No Account click to <strong>Register</strong></a> 
-            <p class="err-style">
-                <% if (locals.error) { %>
-                    <%= error %>
-            <% } %>
+            <p class="error-msg-style">
+                <%= locals.error ? error : "" %>
             </p>
     </div>
     </div>

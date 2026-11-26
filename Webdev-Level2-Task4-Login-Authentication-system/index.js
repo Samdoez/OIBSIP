@@ -62,11 +62,17 @@ app.post("/createAccount", async (req,res) => {
   }
 
   if (fname.length < 3 || lname.length < 3) { //my check against name length
-    return res.status(400).render("index.ejs", { error: "First and last names must be 3 characters and above" });
+    return res.status(400).render("index.ejs", 
+      { FormData: {fname: fname, lname: lname},
+        error: "First and last names must be 3 characters and above" 
+      });
   }
 
   if (!checkEmailStructureAndDomain(email)) { //my check against invalid domain and email structure
-    return res.status(400).render("index.ejs", { error: "Invalid email domain. Please use a valid email address." });
+    return res.status(400).render("index.ejs", 
+      {FormData: {email: email},
+       error: "Invalid email domain. Please use a valid email address." 
+      });
   }
 
   if (!checkPassword(password)) { //my password check
@@ -90,15 +96,16 @@ app.post("/createAccount", async (req,res) => {
 
     //if all verification successful inssert into DB and return RETURNING id for session handling
     const result = await db.query(
-      "INSERT INTO userdb (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING user_id", 
+      "INSERT INTO userdb (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING user_id, fname", 
       [fname, lname, email, hashedPassword]
     );
     
     //to store new created user id in a session
     console.log(result.rows)
     req.session.currentUserId = result.rows[0].user_id;
+    req.session.userName = result.rows[0].fname;
 
-    console.log("User registered and logged in with ID:", req.session.currentUserId);
+    console.log(`User registered and logged in with ID: ${req.session.currentUserId} and name: ${req.session.userName}`);
     return res.redirect("/userDashboard"); 
   } catch (error) {
     console.error("An error occurred:", error.stack);
@@ -111,13 +118,13 @@ app.get("/userDashboard", (req,res) => {
     if (!req.session.currentUserId) {
       return res.redirect("/");
     }
-    return res.status(200).render("dashboard.ejs");
+    const userName = req.session.userName;
+    return res.status(200).render("dashboard.ejs", {userName: userName});
   } catch (error){
       console.log("An error occured: ", error.stack);
       return res.status(500).render("index.ejs", {error: "Internal Server Error"})
   }
 })
-
 
 // to render the login page
 app.get("/loginPageNav", (req, res) =>{
@@ -135,15 +142,15 @@ app.post("/loginUser", async (req,res) => {
   const password = (req.body.password || "").trim();
 
   if (!email || !password) {  //my check against empty field
-    return res.status(400).render("loginUser.ejs", { error: "All fields are required" });
+    return res.status(400).render("loginPage.ejs", { error: "All fields are required" });
   }
 
   if (!checkEmailStructureAndDomain(email)) { //my check against invalid domain and email structure
-    return res.status(400).render("index.ejs", { error: "Invalid email domain. Please use a valid email address." });
+    return res.status(400).render("loginPage.ejs", { error: "Invalid email domain. Please use a valid email address." });
   }
 
   try { // to check the DB if the accounts xist
-    const checkDetails = await db.query("SELECT user_id, email, password FROM userdb WHERE email = $1", [email]);
+    const checkDetails = await db.query("SELECT user_id, fname, email, password FROM userdb WHERE email = $1", [email]);
 
     if (checkDetails.rows.length === 0) {
       return res.status(400).render("loginPage.ejs", { error: "Incorrect Details" });
@@ -155,19 +162,34 @@ app.post("/loginUser", async (req,res) => {
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(400).render("loginUser.ejs", { error: "Incorrect Details" });
+      return res.status(400).render("loginPage.ejs", { error: "Incorrect Details" });
     }
 
     //to save user id in session on successful login
-    req.session.userId = user.id;
+    console.log(user);
+    req.session.currentUserId = user.user_id;
+    req.session.userName = user.fname;
 
-    console.log("User logged in with ID:", req.session.userId);
+    console.log("User logged in with ID:", req.session.currentUserId);
     return res.redirect("/userDashboard");
 
   } catch (error) {
     console.error("An error occurred:", error.stack);
-    return res.status(500).render("loginUser.ejs", { error: "Internal Server Error" });
+    return res.status(500).render("loginPage.ejs", { error: "Internal Server Error" });
   }
+});
+
+// to log out the current user
+app.post("/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Logout error:", err);
+            return res.status(500).render("index.ejs", { error: "Could not log out" });
+        }
+        console.log("logout Successfully");
+        res.clearCookie("connect.sid");
+        res.redirect("/loginPageNav");
+    });
 });
 
 function checkEmailStructureAndDomain(email) {
