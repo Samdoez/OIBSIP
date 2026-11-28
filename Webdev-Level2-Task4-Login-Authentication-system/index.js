@@ -4,40 +4,55 @@ import pg from "pg";
 import env from "dotenv";
 import session from "express-session";
 import bcrypt from "bcrypt";
-import { error } from "node:console";
+import pgSession from "connect-pg-simple";
+
+env.config();
 
 const app = express();
-const port = 3000;
-env.config();
-const saltRounds = 10;
-
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
-
-app.use( session({
-    secret: process.env.SESSION_SECRET || "supersecretkey", 
-    resave: false,                                         
-    saveUninitialized: false,                              
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }
-  })
-);
+const port = process.env.PORT || 3000;
+const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
+const isProduction = process.env.NODE_ENV === "production";
 
 const db = new pg.Pool({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
+
 db.connect((err, client, release) => {
   if (err) {
     console.error("DB connection error:", err.stack);
   } else {
     console.log("Successfully connected to the PostgreSQL DB");
-    release(); 
+    release();
   }
 });
+
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
+const PgStore = pgSession(session);
+
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
+
+app.use(session({
+    store: new PgStore({
+    pool: db,
+    createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET || "supersecretkey",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProduction,
+    },
+  })
+);
 
 //response to request for the home page
 app.get("/", (req, res) =>{
